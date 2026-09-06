@@ -70,7 +70,7 @@ ORDER BY p.unit_price ASC; -- Можемо опустити ASC, оскільк�
 SELECT
     c.contact_name
 FROM customers AS c
-ORDER BY c.contact_name ASC; -- Можемо опустити ASC
+ORDER BY c.contact_name; -- Можемо опустити ASC
 
 -- Завдання 3.3: Вивести замовлення від найновіших до найстаріших.
 -- Додаємо o.order_id DESC для детермінованого сортування при однакових датах
@@ -127,5 +127,5 @@ LIMIT 5;
 SELECT
     c.contact_name
 FROM customers AS c
-ORDER BY c.contact_name ASC
+ORDER BY c.contact_name
 LIMIT 8;
