@@ -82,7 +82,7 @@ WHERE e.title ILIKE '%продаж%';
 SELECT
     *
 FROM products AS p
-ORDER BY p.unit_price ASC;
+ORDER BY p.unit_price;
 
 -- Завдання 3.2:
 -- Показати клієнтів в алфавітному порядку за іменем контактної особи.
@@ -93,7 +93,7 @@ SELECT
     c.city,
     c.phone
 FROM customers AS c
-ORDER BY c.contact_name ASC;
+ORDER BY c.contact_name;
 
 -- Завдання 3.3:
 -- Вивести замовлення від найновіших до найстаріших.
@@ -162,5 +162,5 @@ SELECT
     c.contact_name,
     c.city
 FROM customers AS c
-ORDER BY c.contact_name ASC
+ORDER BY c.contact_name
 LIMIT 8;

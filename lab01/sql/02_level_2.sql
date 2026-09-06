@@ -289,7 +289,7 @@ SELECT
 FROM products AS p
 WHERE p.unit_price BETWEEN 15000 AND 35000
   AND p.category_id IN (1, 2, 3)
-ORDER BY p.category_id ASC, p.unit_price DESC;
+ORDER BY p.category_id, p.unit_price DESC;
 
 -- Завдання 4.3 (Самостійно, IS NULL + LIKE + OR):
 -- Фізичні особи з поштовими скриньками популярних доменів.
@@ -349,7 +349,7 @@ SELECT
     p.unit_price,
     p.units_in_stock
 FROM products AS p
-ORDER BY p.category_id ASC, p.unit_price DESC;
+ORDER BY p.category_id, p.unit_price DESC;
 
 -- Завдання 5.2 (Самостійно, Сортування за 3 полями):
 -- Реєстр клієнтів за містом, типом та контактною особою.
@@ -362,7 +362,7 @@ SELECT
     c.contact_name,
     c.phone
 FROM customers AS c
-ORDER BY c.city ASC, c.customer_type DESC, c.contact_name ASC;
+ORDER BY c.city, c.customer_type DESC, c.contact_name;
 
 -- Завдання 5.3 (Самостійно, Сортування за 2 полями):
 -- Моніторинг замовлень за статусом виконання та датою.
@@ -375,7 +375,7 @@ SELECT
     o.ship_city,
     o.freight
 FROM orders AS o
-ORDER BY o.order_status ASC, o.order_date DESC, o.order_id DESC;
+ORDER BY o.order_status, o.order_date DESC, o.order_id DESC;
 
 -- Завдання 5.4 (Самостійно, Пагінація LIMIT + OFFSET):
 -- Друга сторінка каталогу товарів (по 5 товарів на сторінку).
@@ -386,7 +386,7 @@ SELECT
     p.unit_price,
     p.units_in_stock
 FROM products AS p
-ORDER BY p.unit_price DESC, p.product_id ASC
+ORDER BY p.unit_price DESC, p.product_id
 LIMIT 5 OFFSET 5;
 
 -- Завдання 5.5 (Самостійно, Пагінація LIMIT + OFFSET):
