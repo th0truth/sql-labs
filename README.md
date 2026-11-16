@@ -14,6 +14,7 @@
 | **Lab 04** | Розробка реляційної БД з веб-інтеграцією (Bookstore DB, Flask, Docker, REST API, RBAC, Reports) | 1–3 (Високий) | Завершено | [SQL](lab04/database/) | [Звіт](lab04/report.md) |
 | **Lab 05** | Керування БД, оптимізація продуктивності та автоматизація (EXPLAIN ANALYZE, Indexes, Triggers, Views, Roles, Backup) | 1–3 (Високий) | Завершено | [SQL](lab05/sql/) | [Звіт](lab05/report.md) |
 | **Lab 06** | Робота з СУБД MongoDB та реалізація операцій (NoSQL CRUD, Aggregations, $lookup, 2dsphere, Versioning, Backup) | 1–3 (Високий) | Завершено | [Scripts](lab06/scripts/) | [Звіт](lab06/report.md) |
+| **Lab 07** | Повний цикл розробки NoSQL застосунку з інтеграцією (MongoDB 8.0, Express REST API, Nested Comments, Caching, Web SPA) | 1–3 (Високий) | Завершено | [Code](lab07/) | [Звіт](lab07/report.md) |
 
 ---
 
@@ -143,4 +144,22 @@ sql-labs/
     ├── backups/            # Логічні дампи BSON та JSON
     └── task/               # Методичні матеріали
         └── lab-06.md       # Завдання та вимоги
+└── lab07/                  # Лабораторна робота №7 (Повний цикл NoSQL застосунку з MongoDB)
+    ├── report.md           # Підсумковий звіт (порівняння MongoDB vs Postgres 3NF, запитання)
+    ├── report.pdf          # Експортований друкований PDF-звіт (8 сторінок)
+    ├── database/           # Скрипти MongoDB та DDL (01–06, run_all.sh)
+    │   ├── 01_setup_schema_validation.js    # JSON Schema валідація для users, categories, posts
+    │   ├── 02_create_indexes.js             # Унікальні, складені, часткові, 2dsphere та повнотекстові індекси
+    │   ├── 03_seed_data.js                  # Наповнення: 20 користувачів, 10 рубрик, 50 статей, 274 коментарі
+    │   ├── 04_aggregations.js               # Топ-автори, рубрики, статистика коментарів, фасетна пагінація
+    │   ├── 05_advanced_level3.js            # Версіонування post_history, рекурсивні коментарі, сповіщення, кеш
+    │   ├── 06_relational_comparison.sql     # Еквівалентна 3NF реляційна модель (PostgreSQL) та порівняльний JOIN
+    │   └── run_all.sh                       # Автоматизований наскрізний запуск бази даних Lab 07
+    ├── web_app/            # Повноцінний NoSQL вебзастосунок (Node.js + Express + SPA)
+    │   ├── server.js                        # Express RESTful API з кешуванням в пам'яті (TTL 60s)
+    │   ├── package.json                     # Залежності: express, mongodb, cors
+    │   └── public/
+    │       └── index.html                   # Адаптивний SPA інтерфейс (каталог, пошук, модалки, дерево коментарів)
+    └── task/               # Методичні матеріали
+        └── lab-07.md       # Завдання та вимоги
 ```

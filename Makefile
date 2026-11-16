@@ -6,7 +6,8 @@ export
         run-lab03 run-lab03-level2 run-lab03-level3 run-lab03-all \
         seed-lab04 run-lab04-console run-lab04-web docker-lab04-up docker-lab04-down \
         seed-lab05 benchmark-lab05 maintain-lab05 backup-lab05 run-lab05-all \
-        mongo-up mongo-down run-lab06-all run-all
+        mongo-up mongo-down run-lab06-all \
+        seed-lab07 run-lab07-web run-lab07-all run-all
 
 help:
 	@echo "Available commands:"
@@ -37,6 +38,9 @@ help:
 	@echo "  make mongo-up          - Start MongoDB 8.0 Docker container"
 	@echo "  make mongo-down        - Stop MongoDB Docker container"
 	@echo "  make run-lab06-all     - Execute full Lab 06 MongoDB workflow (CRUD, Indexes, Aggregation, Level 3)"
+	@echo "  make seed-lab07        - Seed and initialize Lab 07 MongoDB database (Validation, Indexes, 50 posts)"
+	@echo "  make run-lab07-web     - Start Lab 07 Express.js NoSQL Blog Web Application (http://localhost:3000)"
+	@echo "  make run-lab07-all     - Execute full Lab 07 NoSQL database pipeline sequentially"
 	@echo "  make run-all           - Execute all labs sequentially"
 
 psql:
@@ -133,4 +137,12 @@ mongo-down:
 run-lab06-all:
 	@chmod +x lab06/scripts/run_all.sh && ./lab06/scripts/run_all.sh
 
-run-all: run-lab01-all run-lab02-all run-lab03-all seed-lab04 seed-lab05 run-lab06-all
+seed-lab07:
+	@chmod +x lab07/database/run_all.sh && ./lab07/database/run_all.sh
+
+run-lab07-web:
+	@cd lab07/web_app && node server.js
+
+run-lab07-all: seed-lab07
+
+run-all: run-lab01-all run-lab02-all run-lab03-all seed-lab04 seed-lab05 run-lab06-all run-lab07-all
