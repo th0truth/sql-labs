@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: bookstore_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bookstore
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d:ro
+    networks:
+      - bookstore_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bookstore_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@bookstore.ua
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - bookstore_network
+
+  web:
+    build:
+      context: ./web_app
+      dockerfile: Dockerfile
+    container_name: bookstore_webapp
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NAME=bookstore-system
+      - SECRET_KEY=kL9vB2nQ7xZ0wE4rT6yU8iO1pA3sD5fG7hJ9kL2
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/bookstore
+      - PYTHONPATH=src
+    depends_on:
+      - postgres
+    networks:
+      - bookstore_network
+
+volumes:
+  postgres_data:
+
+networks:
+  bookstore_network:
+    driver: bridge

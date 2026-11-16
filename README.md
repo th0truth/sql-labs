@@ -11,6 +11,7 @@
 | **Lab 01** | Основи PostgreSQL, вибірка даних (DQL: SELECT, WHERE, ORDER BY, LIMIT, OFFSET, LIKE, CASE) | 1–3 (Високий) | Завершено | [SQL](lab01/sql/) | [Звіт](lab01/report.md) |
 | **Lab 02** | Складні SQL запити (JOIN, агрегатні функції, підзапити, віконні функції, CTE, матеріалізовані представлення) | 1–3 (Високий) | Завершено | [SQL](lab02/sql/) | [Звіт](lab02/report.md) |
 | **Lab 03** | Модифікація даних та транзакції (INSERT, UPDATE, DELETE, цілісність даних, транзакції, COMMIT, ROLLBACK) | 1–3 (Високий) | Завершено | [SQL](lab03/sql/) | [Звіт](lab03/report.md) |
+| **Lab 04** | Розробка реляційної БД з веб-інтеграцією (Bookstore DB, Flask, Docker, REST API, RBAC, Reports) | 1–3 (Високий) | Завершено | [SQL](lab04/database/) | [Звіт](lab04/report.md) |
 
 ---
 
@@ -101,4 +102,13 @@ sql-labs/
     │   └── 03_level_3.sql  # Рівень 3
     └── task/               # Методичні матеріали
         └── lab-03.md       # Завдання та вимоги
+└── lab04/                  # Лабораторна робота №4 (БД Bookstore + Flask Web + CLI)
+    ├── report.md           # Підсумковий звіт із поясненнями та скріншотами
+    ├── docker-compose.yaml # Контейнеризація PostgreSQL 17 + pgAdmin + Web
+    ├── database/           # DDL, тестові дані, процедури, тригери, представлення
+    ├── console_app/        # Консольний застосунок CRUD (Python CLI)
+    ├── web_app/            # Повноцінний Flask вебзастосунок (RBAC, API, PDF, Charts)
+    ├── docs/               # Концептуальна ERD та опис 3НФ
+    └── task/               # Методичні матеріали
+        └── lab-04.md       # Завдання та вимоги
 ```
