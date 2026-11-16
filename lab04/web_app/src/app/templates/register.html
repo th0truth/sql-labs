@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-card" style="max-width: 440px; margin: 3rem auto;">
+    <h2 style="text-align: center; margin-bottom: 1.5rem;">📝 Створення акаунта</h2>
+
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+            {{ form.username.label }}
+            {{ form.username(class="form-control", placeholder="Логін (від 3 символів)") }}
+            {% for error in form.username.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+            {{ form.email.label }}
+            {{ form.email(class="form-control", placeholder="name@domain.com") }}
+            {% for error in form.email.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+            {{ form.password.label }}
+            {{ form.password(class="form-control", placeholder="Мінімум 6 символів") }}
+            {% for error in form.password.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+            {{ form.password_repeat.label }}
+            {{ form.password_repeat(class="form-control", placeholder="Повторіть пароль") }}
+            {% for error in form.password_repeat.errors %}
+                <span style="color: var(--danger); font-size: 0.8rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            {{ form.submit(class="btn btn-primary", style="width: 100%; justify-content: center;") }}
+        </div>
+    </form>
+
+    <div style="text-align: center; font-size: 0.88rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        Вже зареєстровані?
+        <a href="{{ url_for('Web.Auth.login') }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Увійти до системи</a>
+    </div>
+</div>
+{% endblock %}

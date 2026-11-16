@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+        <h1 style="font-size: 1.7rem; font-weight: 700;">📖 Каталог видань книгарні</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Знайдено видань: {{ books|length }}</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('Web.Main.book_add') }}" class="btn btn-primary">+ Додати книгу</a>
+        <a href="{{ url_for('Web.Main.export_pdf') }}" class="btn btn-secondary">Завантажити PDF</a>
+    </div>
+</div>
+
+<!-- Панель пошуку та фільтрації -->
+<div class="filter-card">
+    <form method="GET" action="{{ url_for('Web.Main.books_list') }}" class="filter-form">
+        <div class="form-group" style="flex: 2; min-width: 200px;">
+            <label for="query">Пошук за назвою або ISBN</label>
+            {{ form.query(class="form-control", placeholder="Введіть ключове слово...") }}
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label for="genre_id">Жанр</label>
+            {{ form.genre_id(class="form-control") }}
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label for="author_id">Автор</label>
+            {{ form.author_id(class="form-control") }}
+        </div>
+        <div class="form-group" style="width: 110px;">
+            <label for="min_price">Ціна від, ₴</label>
+            {{ form.min_price(class="form-control", placeholder="0.00") }}
+        </div>
+        <div class="form-group" style="width: 110px;">
+            <label for="max_price">Ціна до, ₴</label>
+            {{ form.max_price(class="form-control", placeholder="1000") }}
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 160px;">
+            <label for="sort_by">Сортування</label>
+            {{ form.sort_by(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Застосувати</button>
+        </div>
+        <div class="form-group">
+            <a href="{{ url_for('Web.Main.books_list') }}" class="btn btn-secondary">Скинути</a>
+        </div>
+    </form>
+</div>
+
+<!-- Таблиця книг -->
+<div class="table-responsive">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ISBN</th>
+                <th>Назва книги</th>
+                <th>Автор</th>
+                <th>Жанр</th>
+                <th>Рік</th>
+                <th>Стор.</th>
+                <th>Ціна, ₴</th>
+                <th>Залишок</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td style="font-family: monospace; font-size: 0.85rem;">{{ book.isbn }}</td>
+                <td><strong>{{ book.title }}</strong></td>
+                <td>{{ book.author.full_name if book.author else '—' }}</td>
+                <td><span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">{{ book.genre.name if book.genre else '—' }}</span></td>
+                <td>{{ book.publication_year or '—' }}</td>
+                <td>{{ book.pages or '—' }}</td>
+                <td><strong>₴{{ "%.2f"|format(book.price) }}</strong></td>
+                <td>
+                    {% if book.stock_quantity > 10 %}
+                        <span class="badge badge-in-stock">{{ book.stock_quantity }} шт.</span>
+                    {% elif book.stock_quantity > 0 %}
+                        <span class="badge badge-low-stock">{{ book.stock_quantity }} шт.</span>
+                    {% else %}
+                        <span class="badge badge-out-of-stock">Немає</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.4rem;">
+                        <a href="{{ url_for('Web.Main.book_edit', book_id=book.book_id) }}" class="btn btn-sm btn-secondary" title="Редагувати">✏️</a>
+                        {% if current_user.is_authenticated and current_user.is_manager %}
+                        <form method="POST" action="{{ url_for('Web.Main.book_delete', book_id=book.book_id) }}" style="display: inline;" onsubmit="return confirm('Ви впевнені, що бажаєте видалити книгу «{{ book.title }}»?');">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Видалити">🗑️</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    За вказаними критеріями пошуку книг не знайдено.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

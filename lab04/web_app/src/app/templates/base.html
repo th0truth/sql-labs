@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="uk">
+    <head>
+        {% include "default/head.html" %}
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        {% include "partials/header.html" %}
+
+        <main class="container">
+            {% include "partials/messages.html" %}
+            {% block content %}{% endblock %}
+        </main>
+
+        {% include "partials/footer.html" %}
+        {% include "default/scripts.html" %}
+        {% block scripts %}{% endblock %}
+    </body>
+</html>

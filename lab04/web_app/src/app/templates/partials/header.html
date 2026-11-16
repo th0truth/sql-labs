@@ -1,0 +1,26 @@
+<header class="header">
+    <div class="nav-container">
+        <a href="{{ url_for('Web.Main.index') }}" class="brand-logo">
+            📚 <span>Bookstore MIS</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('Web.Main.index') }}">Головна</a></li>
+                <li><a href="{{ url_for('Web.Main.books_list') }}">Книги</a></li>
+                <li><a href="{{ url_for('Web.Main.authors_list') }}">Автори</a></li>
+                <li><a href="{{ url_for('Web.Main.stats') }}">Аналітика</a></li>
+                <li><a href="{{ url_for('Web.Main.export_pdf') }}">📄 PDF Звіт</a></li>
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                    <li><a href="{{ url_for('Web.Main.backup') }}">💾 Backup</a></li>
+                {% endif %}
+                {% if current_user.is_anonymous %}
+                    <li><a href="{{ url_for('Web.Auth.login') }}" class="btn btn-sm btn-primary">Вхід</a></li>
+                    <li><a href="{{ url_for('Web.Auth.register') }}" class="btn btn-sm btn-secondary">Реєстрація</a></li>
+                {% else %}
+                    <li><span class="user-badge">{{ current_user.username }} ({{ current_user.role }})</span></li>
+                    <li><a href="{{ url_for('Web.Auth.logout') }}" class="btn btn-sm btn-secondary">Вихід</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</header>

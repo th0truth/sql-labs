@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 1.7rem; font-weight: 700;">📊 Аналітика та візуалізація даних</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Графічне відображення статистичних показників книжкового магазину (Рівень 3)</p>
+</div>
+
+<!-- Блок графіків -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center;">
+        <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 1rem;">Розподіл видань за жанрами</h3>
+        {% if genre_chart %}
+            <img src="data:image/png;base64,{{ genre_chart }}" alt="Розподіл книг за жанрами" style="max-width: 100%; height: auto; border-radius: 6px;">
+        {% else %}
+            <p style="color: var(--text-muted);">Дані для побудови графіка відсутні</p>
+        {% endif %}
+    </div>
+
+    <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center;">
+        <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 1rem;">Розподіл цін на книги (гістограма)</h3>
+        {% if price_chart %}
+            <img src="data:image/png;base64,{{ price_chart }}" alt="Гістограма цін" style="max-width: 100%; height: auto; border-radius: 6px;">
+        {% else %}
+            <p style="color: var(--text-muted);">Дані для побудови графіка відсутні</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Топ бестселерів з представлення v_top_selling_books -->
+<div style="margin-top: 2rem;">
+    <h2 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem;">🔥 Топ бестселерів (з представлення <code>v_top_selling_books</code>)</h2>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Назва книги</th>
+                    <th>Автор</th>
+                    <th>Жанр</th>
+                    <th>Ціна, ₴</th>
+                    <th>Продано примірників</th>
+                    <th>Сумарний виторг, ₴</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in top_books %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ b.title }}</strong></td>
+                    <td>{{ b.author_name }}</td>
+                    <td><span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">{{ b.genre_name }}</span></td>
+                    <td>₴{{ "%.2f"|format(b.price) }}</td>
+                    <td><span class="badge badge-in-stock">{{ b.units_sold }} шт.</span></td>
+                    <td><strong>₴{{ "%.2f"|format(b.total_revenue) }}</strong></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                        Дані про продажі відсутні.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

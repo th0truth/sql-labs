@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 1.8rem; font-weight: 700; color: #0f172a;">Панель управління книгарнею</h1>
+        <p style="color: #64748b; font-size: 0.95rem;">Огляд ключових показників, стану фонду та останніх надходжень</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('Web.Main.book_add') }}" class="btn btn-primary">+ Додати книгу</a>
+        <a href="{{ url_for('Web.Main.export_pdf') }}" class="btn btn-secondary">Завантажити звіт PDF</a>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <span class="kpi-title">Найменувань у каталозі</span>
+        <span class="kpi-value">{{ total_books }}</span>
+    </div>
+    <div class="kpi-card">
+        <span class="kpi-title">Зареєстровано авторів</span>
+        <span class="kpi-value">{{ total_authors }}</span>
+    </div>
+    <div class="kpi-card">
+        <span class="kpi-title">Тематичних жанрів</span>
+        <span class="kpi-value">{{ total_genres }}</span>
+    </div>
+    <div class="kpi-card">
+        <span class="kpi-title">Оформлено замовлень</span>
+        <span class="kpi-value">{{ total_orders }}</span>
+    </div>
+</div>
+
+<!-- Останні надходження -->
+<div style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 600;">Останні надходження книг</h2>
+        <a href="{{ url_for('Web.Main.books_list') }}" style="color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Переглянути весь каталог &rarr;</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ISBN</th>
+                    <th>Назва книги</th>
+                    <th>Автор</th>
+                    <th>Жанр</th>
+                    <th>Рік</th>
+                    <th>Ціна, ₴</th>
+                    <th>Склад</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in recent_books %}
+                <tr>
+                    <td style="font-family: monospace; font-size: 0.85rem;">{{ book.isbn }}</td>
+                    <td><strong>{{ book.title }}</strong></td>
+                    <td>{{ book.author.full_name if book.author else '—' }}</td>
+                    <td>{{ book.genre.name if book.genre else '—' }}</td>
+                    <td>{{ book.publication_year or '—' }}</td>
+                    <td><strong>₴{{ "%.2f"|format(book.price) }}</strong></td>
+                    <td>
+                        {% if book.stock_quantity > 10 %}
+                            <span class="badge badge-in-stock">{{ book.stock_quantity }} шт.</span>
+                        {% elif book.stock_quantity > 0 %}
+                            <span class="badge badge-low-stock">{{ book.stock_quantity }} шт.</span>
+                        {% else %}
+                            <span class="badge badge-out-of-stock">Немає</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('Web.Main.book_edit', book_id=book.book_id) }}" class="btn btn-sm btn-secondary">Редагувати</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
