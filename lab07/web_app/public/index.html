@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoSQL BlogHub — MongoDB 8.0 Full-Cycle Application (Лабораторна робота №7)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+    }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+  <!-- ======================= HEADER / NAVBAR ======================= -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-500/30">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <div>
+          <span class="text-lg font-bold tracking-tight text-white">NoSQL BlogHub</span>
+          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-700/50 rounded-full">
+            MongoDB 8.0 &bull; Lab 07
+          </span>
+        </div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <button onclick="openAnalyticsModal()" class="flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition">
+          <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+          <span class="hidden sm:inline">Аналітика</span>
+        </button>
+        <button onclick="openCreateModal()" class="flex items-center space-x-1.5 px-4 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm transition">
+          <i class="fa-solid fa-plus"></i>
+          <span>Нова стаття</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================= HERO / SEARCH & FILTERS ======================= -->
+  <section class="bg-gradient-to-b from-slate-900 to-slate-800 text-white py-10 px-4 sm:px-6 lg:px-8 border-b border-slate-700">
+    <div class="max-w-5xl mx-auto text-center">
+      <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+        Повнотекстовий пошук &bull; Агрегації &bull; Геолокація
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold mt-3 tracking-tight">
+        Сучасний NoSQL Блог на базі MongoDB
+      </h1>
+      <p class="text-slate-300 mt-2 text-sm sm:text-base max-w-2xl mx-auto">
+        Демонстрація повноцінної документної моделі даних, ієрархічних коментарів, фасетної пагінації та геопросторових індексів.
+      </p>
+
+      <!-- Search Input Form -->
+      <form id="search-form" onsubmit="handleSearch(event)" class="mt-6 max-w-xl mx-auto relative flex items-center">
+        <div class="relative w-full">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Пошук за назвою, описом або ключовим словом..."
+            class="w-full pl-11 pr-24 py-3 bg-slate-950/60 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+          >
+          <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition">
+            Пошук
+          </button>
+        </div>
+      </form>
+
+      <!-- Category Filter Pills -->
+      <div id="category-pills" class="mt-6 flex flex-wrap justify-center gap-2">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= ACTIVE FILTER ALERT ======================= -->
+  <div id="active-filter-bar" class="hidden bg-emerald-50 border-b border-emerald-100 py-2.5 px-4 text-xs font-medium text-emerald-800">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-filter text-emerald-600"></i>
+        <span>Активний фільтр: <strong id="active-filter-label" class="underline"></strong></span>
+      </div>
+      <button onclick="resetFilters()" class="text-emerald-700 hover:text-emerald-900 underline flex items-center space-x-1">
+        <span>Скинути фільтри</span>
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ======================= MAIN CONTENT (POSTS GRID) ======================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+    <!-- Posts Grid Status / Count -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+        <span>Публікації</span>
+        <span id="results-count" class="text-xs font-semibold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">Завантаження...</span>
+      </h2>
+      <div class="text-xs text-slate-500">
+        Сторінка <span id="current-page-num" class="font-bold text-slate-700">1</span> з <span id="total-pages-num" class="font-bold text-slate-700">1</span>
+      </div>
+    </div>
+
+    <!-- Grid Container -->
+    <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Loading skeletons initially -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-pulse h-80"></div>
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-pulse h-80"></div>
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-pulse h-80"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200">
+      <div class="w-16 h-16 mx-auto bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-2xl mb-4">
+        <i class="fa-regular fa-folder-open"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800">Статей не знайдено</h3>
+      <p class="text-sm text-slate-500 mt-1">Спробуйте змінити критерії пошуку або скиньте фільтри</p>
+      <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition">
+        Показати всі статті
+      </button>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div id="pagination" class="mt-10 flex justify-center items-center space-x-2">
+      <!-- Generated in JS -->
+    </div>
+  </main>
+
+  <!-- ======================= POST DETAIL MODAL ======================= -->
+  <div id="post-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <!-- Modal Header -->
+      <div class="relative bg-slate-900 text-white p-6 sm:p-8 flex flex-col justify-end">
+        <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 w-8 h-8 rounded-full flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+        <div class="flex items-center space-x-2 mb-2">
+          <span id="modal-category" class="px-2.5 py-0.5 text-xs font-bold uppercase rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"></span>
+          <span id="modal-date" class="text-xs text-slate-400"></span>
+        </div>
+        <h2 id="modal-title" class="text-2xl sm:text-3xl font-bold leading-tight text-white"></h2>
+        <div class="flex items-center space-x-4 mt-4 pt-4 border-t border-slate-800">
+          <img id="modal-author-avatar" src="" alt="avatar" class="w-10 h-10 rounded-full border border-slate-700 bg-slate-800">
+          <div>
+            <div id="modal-author-name" class="text-sm font-semibold text-white"></div>
+            <div id="modal-location" class="text-xs text-emerald-400 flex items-center space-x-1">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Київ, Україна [30.5238, 50.4471]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
+        <!-- Content -->
+        <div id="modal-content" class="text-slate-700 leading-relaxed text-sm sm:text-base whitespace-pre-line border-b border-slate-100 pb-6">
+        </div>
+
+        <!-- Tags -->
+        <div class="flex flex-wrap items-center gap-1.5" id="modal-tags">
+          <!-- Tags list -->
+        </div>
+
+        <!-- Metrics & Like button -->
+        <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="flex items-center space-x-4 text-xs text-slate-600 font-medium">
+            <span class="flex items-center space-x-1">
+              <i class="fa-regular fa-eye text-slate-400"></i>
+              <span id="modal-views">0</span> переглядів
+            </span>
+            <span class="flex items-center space-x-1">
+              <i class="fa-regular fa-comment text-slate-400"></i>
+              <span id="modal-comments-count">0</span> коментарів
+            </span>
+          </div>
+          <button id="modal-like-btn" onclick="handleLike()" class="flex items-center space-x-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-lg border border-rose-200 transition">
+            <i class="fa-solid fa-heart"></i>
+            <span id="modal-likes">0</span>
+            <span>Вподобати</span>
+          </button>
+        </div>
+
+        <!-- Nested Comments Section -->
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2">
+            <span>Обговорення та коментарі</span>
+            <span class="text-xs font-medium text-slate-400">(ієрархічні вкладені гілки)</span>
+          </h3>
+
+          <!-- Add Comment Box -->
+          <form id="comment-form" onsubmit="handleAddComment(event)" class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 space-y-3">
+            <div id="replying-to-badge" class="hidden bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md flex items-center justify-between">
+              <span>Відповідь користувачу: <strong id="reply-to-user"></strong></span>
+              <button type="button" onclick="cancelReply()" class="text-emerald-700 hover:text-emerald-900"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                type="text"
+                id="comment-author"
+                placeholder="Ваше ім'я (або нікнейм)"
+                required
+                class="px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              >
+            </div>
+            <textarea
+              id="comment-text"
+              rows="3"
+              placeholder="Напишіть коментар..."
+              required
+              class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none"
+            ></textarea>
+            <div class="flex justify-end">
+              <button type="submit" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                <i class="fa-regular fa-paper-plane mr-1"></i> Надіслати
+              </button>
+            </div>
+          </form>
+
+          <!-- Comments List -->
+          <div id="modal-comments-tree" class="space-y-4">
+            <!-- Dynamic comments tree -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= CREATE POST MODAL ======================= -->
+  <div id="create-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+          <i class="fa-solid fa-pen-nib text-emerald-600"></i>
+          <span>Створення нової публікації</span>
+        </h3>
+        <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleCreatePost(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Назва публікації *</label>
+          <input
+            type="text"
+            id="new-title"
+            required
+            placeholder="Введіть змістовний заголовок..."
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+          >
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Категорія *</label>
+            <select
+              id="new-category"
+              required
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
+            >
+              <!-- Filled from /api/categories -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Теги (через кому) *</label>
+            <input
+              type="text"
+              id="new-tags"
+              required
+              placeholder="mongodb, nosql, backend, nodejs"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            >
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Короткий опис (Excerpt)</label>
+          <input
+            type="text"
+            id="new-excerpt"
+            placeholder="Короткий анонс статті для карток..."
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+          >
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-semibold text-slate-700">Текст статті (Мінімум 100 символів за схемою) *</label>
+            <span id="char-counter" class="text-xs text-rose-500 font-medium">0 / 100</span>
+          </div>
+          <textarea
+            id="new-content"
+            rows="6"
+            required
+            oninput="updateCharCount()"
+            placeholder="Введіть повний зміст публікації..."
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none"
+          ></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-semibold rounded-lg transition">
+            Скасувати
+          </button>
+          <button type="submit" id="submit-post-btn" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm transition">
+            Опублікувати статтю
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================= ANALYTICS MODAL ======================= -->
+  <div id="analytics-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-chart-line text-emerald-600"></i>
+            <span>Аналітична панель системи блогу</span>
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Розраховано агрегаційними конвеєрами MongoDB ($group, $sort, $sum)
+          </p>
+        </div>
+        <button onclick="closeAnalyticsModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-xs text-slate-500 font-medium">Всього публікацій</div>
+          <div id="stat-posts" class="text-2xl font-black text-slate-900 mt-1">-</div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-xs text-slate-500 font-medium">Загалом коментарів</div>
+          <div id="stat-comments" class="text-2xl font-black text-emerald-600 mt-1">-</div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-xs text-slate-500 font-medium">Переглядів</div>
+          <div id="stat-views" class="text-2xl font-black text-blue-600 mt-1">-</div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-xs text-slate-500 font-medium">Вподобань (Likes)</div>
+          <div id="stat-likes" class="text-2xl font-black text-rose-500 mt-1">-</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Top Authors -->
+        <div class="border border-slate-200 rounded-xl p-4">
+          <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
+            <span>Топ-5 Авторів за кількістю статей</span>
+            <i class="fa-solid fa-award text-amber-500"></i>
+          </h4>
+          <div id="stat-top-authors" class="space-y-2 text-xs">
+            <!-- Dynamic authors -->
+          </div>
+        </div>
+
+        <!-- Top Categories -->
+        <div class="border border-slate-200 rounded-xl p-4">
+          <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
+            <span>Розподіл статей за категоріями</span>
+            <i class="fa-solid fa-layer-group text-emerald-500"></i>
+          </h4>
+          <div id="stat-top-categories" class="space-y-2 text-xs">
+            <!-- Dynamic categories -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Cache status badge -->
+      <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <span id="stat-cache-status" class="flex items-center space-x-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Дані отримано в реальному часі (з кешуванням в оперативній пам'яті)</span>
+        </span>
+        <button onclick="loadStats()" class="text-emerald-600 hover:text-emerald-700 font-semibold underline">
+          Оновити показники
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= FOOTER ======================= -->
+  <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 px-4 text-xs text-center">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+      <div>
+        &copy; 2026 NoSQL BlogHub. Лабораторна робота №7 з баз даних.
+      </div>
+      <div class="flex items-center space-x-4">
+        <span>Студент: <strong>Панасюк В. В. (ІПЗ-32)</strong></span>
+        <span>&bull;</span>
+        <span>Стек: <strong>MongoDB 8.0 &bull; Express.js &bull; Node.js</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= CLIENT JAVASCRIPT ======================= -->
+  <script>
+    // Global state
+    let state = {
+      page: 1,
+      limit: 9,
+      total_pages: 1,
+      category: '',
+      tag: '',
+      search: '',
+      activePostSlug: null,
+      replyToCommentId: null
+    };
+
+    let categoriesCache = [];
+
+    // Document ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCategories();
+      await fetchPosts();
+    });
+
+    // 1. Load Categories
+    async function loadCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        categoriesCache = await res.json();
+
+        // Render pills
+        const pillsContainer = document.getElementById('category-pills');
+        const selectContainer = document.getElementById('new-category');
+
+        pillsContainer.innerHTML = `
+          <button onclick="filterByCategory('')" class="category-pill px-3 py-1 text-xs font-semibold rounded-full transition ${!state.category ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+            Всі категорії
+          </button>
+        `;
+
+        selectContainer.innerHTML = '';
+
+        categoriesCache.forEach(cat => {
+          // Pill
+          const btn = document.createElement('button');
+          btn.onclick = () => filterByCategory(cat.name);
+          btn.className = `category-pill px-3 py-1 text-xs font-semibold rounded-full transition ${state.category === cat.name ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`;
+          btn.textContent = `${cat.name} (${cat.statistics?.posts_count || 0})`;
+          pillsContainer.appendChild(btn);
+
+          // Option in modal
+          const opt = document.createElement('option');
+          opt.value = cat._id;
+          opt.textContent = cat.name;
+          selectContainer.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    }
+
+    // 2. Fetch Posts with facet pagination
+    async function fetchPosts() {
+      const grid = document.getElementById('posts-grid');
+      const emptyState = document.getElementById('empty-state');
+      const countEl = document.getElementById('results-count');
+
+      try {
+        const params = new URLSearchParams({
+          page: state.page,
+          limit: state.limit
+        });
+        if (state.category) params.append('category', state.category);
+        if (state.tag) params.append('tag', state.tag);
+        if (state.search) params.append('search', state.search);
+
+        const res = await fetch(`/api/posts?${params.toString()}`);
+        const data = await res.json();
+
+        state.total_pages = data.total_pages || 1;
+        document.getElementById('current-page-num').textContent = data.page;
+        document.getElementById('total-pages-num').textContent = data.total_pages;
+        countEl.textContent = `${data.total_items} знайдено`;
+
+        // Update active filter bar
+        const filterBar = document.getElementById('active-filter-bar');
+        const filterLabel = document.getElementById('active-filter-label');
+        if (state.category || state.tag || state.search) {
+          filterBar.classList.remove('hidden');
+          const parts = [];
+          if (state.category) parts.push(`Категорія: "${state.category}"`);
+          if (state.tag) parts.push(`Тег: #${state.tag}`);
+          if (state.search) parts.push(`Пошук: "${state.search}"`);
+          filterLabel.textContent = parts.join(', ');
+        } else {
+          filterBar.classList.add('hidden');
+        }
+
+        if (data.items.length === 0) {
+          grid.innerHTML = '';
+          emptyState.classList.remove('hidden');
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+        grid.innerHTML = data.items.map(post => `
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md hover:border-emerald-300 transition-all duration-200 flex flex-col justify-between overflow-hidden group">
+            <div class="p-6">
+              <!-- Meta top -->
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
+                <span class="font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                  ${post.category?.name || 'Загальне'}
+                </span>
+                <span>${new Date(post.published_at).toLocaleDateString('uk-UA')}</span>
+              </div>
+
+              <!-- Title -->
+              <h3 onclick="openPostModal('${post.slug}')" class="text-base sm:text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition cursor-pointer line-clamp-2 leading-snug">
+                ${post.title}
+              </h3>
+
+              <!-- Excerpt -->
+              <p class="text-xs sm:text-sm text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                ${post.excerpt || post.content?.slice(0, 140) + '...'}
+              </p>
+
+              <!-- Tags -->
+              <div class="flex flex-wrap gap-1.5 mt-4">
+                ${(post.tags || []).map(t => `
+                  <button onclick="filterByTag('${t}')" class="text-[11px] font-medium px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md transition">
+                    #${t}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Card Bottom Bar -->
+            <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <div class="flex items-center space-x-2">
+                <img src="${post.author?.avatar_url || 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + post.author?.username}" class="w-6 h-6 rounded-full border border-slate-200" alt="avatar">
+                <span class="font-medium text-slate-700">${post.author?.username}</span>
+              </div>
+              <div class="flex items-center space-x-3 text-slate-400">
+                <span title="Перегляди"><i class="fa-regular fa-eye mr-1"></i>${post.statistics?.views || 0}</span>
+                <span title="Вподобайки"><i class="fa-regular fa-heart mr-1"></i>${post.statistics?.likes || 0}</span>
+                <span title="Коментарі"><i class="fa-regular fa-comment mr-1"></i>${post.statistics?.comments_count || 0}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        renderPagination(data.page, data.total_pages);
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+      }
+    }
+
+    // 3. Render Pagination
+    function renderPagination(current, total) {
+      const container = document.getElementById('pagination');
+      if (total <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      if (current > 1) {
+        html += `<button onclick="goToPage(${current - 1})" class="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700"><i class="fa-solid fa-chevron-left"></i> Назад</button>`;
+      }
+
+      for (let p = 1; p <= total; p++) {
+        if (p === current) {
+          html += `<button class="px-3 py-1.5 text-xs font-bold bg-emerald-600 text-white rounded-lg shadow-sm">${p}</button>`;
+        } else if (p === 1 || p === total || (p >= current - 1 && p <= current + 1)) {
+          html += `<button onclick="goToPage(${p})" class="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700">${p}</button>`;
+        } else if (p === current - 2 || p === current + 2) {
+          html += `<span class="px-1 text-slate-400">...</span>`;
+        }
+      }
+
+      if (current < total) {
+        html += `<button onclick="goToPage(${current + 1})" class="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700">Вперед <i class="fa-solid fa-chevron-right"></i></button>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function goToPage(p) {
+      state.page = p;
+      fetchPosts();
+      window.scrollTo({ top: 380, behavior: 'smooth' });
+    }
+
+    // Filters & Search handlers
+    function filterByCategory(cat) {
+      state.category = cat;
+      state.page = 1;
+      loadCategories();
+      fetchPosts();
+    }
+
+    function filterByTag(tag) {
+      state.tag = tag;
+      state.page = 1;
+      fetchPosts();
+    }
+
+    function handleSearch(e) {
+      e.preventDefault();
+      state.search = document.getElementById('search-input').value.trim();
+      state.page = 1;
+      fetchPosts();
+    }
+
+    function resetFilters() {
+      state.category = '';
+      state.tag = '';
+      state.search = '';
+      state.page = 1;
+      document.getElementById('search-input').value = '';
+      loadCategories();
+      fetchPosts();
+    }
+
+    // 4. Open Post Detail Modal
+    async function openPostModal(slug) {
+      state.activePostSlug = slug;
+      state.replyToCommentId = null;
+      cancelReply();
+
+      try {
+        const res = await fetch(`/api/posts/${slug}`);
+        if (!res.ok) throw new Error('Пост не знайдено');
+        const post = await res.json();
+
+        document.getElementById('modal-title').textContent = post.title;
+        document.getElementById('modal-category').textContent = post.category?.name || 'Блог';
+        document.getElementById('modal-date').textContent = new Date(post.published_at).toLocaleString('uk-UA');
+        document.getElementById('modal-author-name').textContent = post.author?.username;
+        document.getElementById('modal-author-avatar').src = post.author?.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${post.author?.username}`;
+        document.getElementById('modal-content').textContent = post.content;
+        document.getElementById('modal-views').textContent = post.statistics?.views || 1;
+        document.getElementById('modal-likes').textContent = post.statistics?.likes || 0;
+        document.getElementById('modal-comments-count').textContent = post.statistics?.comments_count || 0;
+
+        // Tags
+        const tagsBox = document.getElementById('modal-tags');
+        tagsBox.innerHTML = (post.tags || []).map(t => `
+          <span class="text-xs px-2.5 py-1 bg-slate-100 text-slate-700 font-semibold rounded-md">#${t}</span>
+        `).join('');
+
+        // Build Nested Comments
+        renderCommentsTree(post.comments || []);
+
+        document.getElementById('post-modal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function closePostModal() {
+      document.getElementById('post-modal').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      state.activePostSlug = null;
+      fetchPosts(); // refresh view count in grid
+    }
+
+    // 5. Nested Comments Tree Render
+    function renderCommentsTree(comments) {
+      const container = document.getElementById('modal-comments-tree');
+      if (!comments || comments.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 italic">Коментарів поки немає. Будьте першим, хто висловить думку!</div>`;
+        return;
+      }
+
+      // Group by parent_id
+      const rootComments = comments.filter(c => !c.parent_id);
+      const repliesMap = new Map();
+
+      comments.forEach(c => {
+        if (c.parent_id) {
+          const pid = c.parent_id.toString();
+          if (!repliesMap.has(pid)) repliesMap.set(pid, []);
+          repliesMap.get(pid).push(c);
+        }
+      });
+
+      function buildCommentHTML(comment, isReply = false) {
+        const cid = comment.comment_id?.toString() || comment._id?.toString();
+        const replies = repliesMap.get(cid) || [];
+
+        return `
+          <div class="${isReply ? 'ml-6 sm:ml-10 border-l-2 border-emerald-300 pl-4 mt-3' : 'bg-white p-4 rounded-xl border border-slate-200'}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-[10px]">
+                  ${comment.author?.username ? comment.author.username.slice(0, 2).toUpperCase() : 'US'}
+                </div>
+                <span class="text-xs font-bold text-slate-800">${comment.author?.username || 'Гість'}</span>
+                <span class="text-[11px] text-slate-400">&bull; ${new Date(comment.created_at).toLocaleString('uk-UA')}</span>
+              </div>
+              <button onclick="startReply('${cid}', '${comment.author?.username}')" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center space-x-1">
+                <i class="fa-solid fa-reply text-[10px]"></i>
+                <span>Відповісти</span>
+              </button>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-700 mt-2 leading-relaxed whitespace-pre-wrap">${comment.text}</p>
+            ${replies.length > 0 ? replies.map(r => buildCommentHTML(r, true)).join('') : ''}
+          </div>
+        `;
+      }
+
+      container.innerHTML = rootComments.map(c => buildCommentHTML(c, false)).join('');
+    }
+
+    function startReply(commentId, authorName) {
+      state.replyToCommentId = commentId;
+      document.getElementById('reply-to-user').textContent = authorName;
+      document.getElementById('replying-to-badge').classList.remove('hidden');
+      document.getElementById('comment-text').focus();
+    }
+
+    function cancelReply() {
+      state.replyToCommentId = null;
+      document.getElementById('replying-to-badge').classList.add('hidden');
+    }
+
+    // 6. Handle Add Comment
+    async function handleAddComment(e) {
+      e.preventDefault();
+      if (!state.activePostSlug) return;
+
+      const author = document.getElementById('comment-author').value.trim();
+      const text = document.getElementById('comment-text').value.trim();
+
+      try {
+        const res = await fetch(`/api/posts/${state.activePostSlug}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: author,
+            text,
+            parent_id: state.replyToCommentId
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Помилка надсилання коментаря');
+        }
+
+        document.getElementById('comment-text').value = '';
+        cancelReply();
+        // Reload post details to get updated comments
+        await openPostModal(state.activePostSlug);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // 7. Handle Like Post ($inc atomic)
+    async function handleLike() {
+      if (!state.activePostSlug) return;
+      try {
+        const res = await fetch(`/api/posts/${state.activePostSlug}/like`, { method: 'POST' });
+        const data = await res.json();
+        document.getElementById('modal-likes').textContent = data.likes;
+      } catch (err) {
+        console.error('Like failed:', err);
+      }
+    }
+
+    // 8. Create Post Modal
+    function openCreateModal() {
+      document.getElementById('create-modal').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      updateCharCount();
+    }
+
+    function closeCreateModal() {
+      document.getElementById('create-modal').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    function updateCharCount() {
+      const text = document.getElementById('new-content').value;
+      const countEl = document.getElementById('char-counter');
+      countEl.textContent = `${text.length} / 100`;
+      if (text.length >= 100) {
+        countEl.className = 'text-xs text-emerald-600 font-semibold';
+      } else {
+        countEl.className = 'text-xs text-rose-500 font-medium';
+      }
+    }
+
+    async function handleCreatePost(e) {
+      e.preventDefault();
+      const title = document.getElementById('new-title').value.trim();
+      const category_id = document.getElementById('new-category').value;
+      const tags = document.getElementById('new-tags').value.trim();
+      const excerpt = document.getElementById('new-excerpt').value.trim();
+      const content = document.getElementById('new-content').value.trim();
+
+      if (content.length < 100) {
+        alert('Текст статті має містити не менше 100 символів відповідно до схеми валідації MongoDB!');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            category_id,
+            tags,
+            excerpt,
+            content
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Не вдалося створити пост');
+
+        closeCreateModal();
+        alert('Статтю успішно створено та опубліковано!');
+        resetFilters();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // 9. Analytics Modal
+    async function openAnalyticsModal() {
+      document.getElementById('analytics-modal').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      await loadStats();
+    }
+
+    function closeAnalyticsModal() {
+      document.getElementById('analytics-modal').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+
+        document.getElementById('stat-posts').textContent = data.total_posts;
+        document.getElementById('stat-comments').textContent = data.total_comments;
+        document.getElementById('stat-views').textContent = data.total_views.toLocaleString();
+        document.getElementById('stat-likes').textContent = data.total_likes.toLocaleString();
+
+        const cacheEl = document.getElementById('stat-cache-status');
+        if (data.from_cache) {
+          cacheEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span><span>Відповідь завантажено з in-memory кешу (відгук < 1 мс)</span>`;
+        } else {
+          cacheEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Свіжий розрахунок MongoDB Aggregation Pipeline</span>`;
+        }
+
+        // Top authors
+        const authorsBox = document.getElementById('stat-top-authors');
+        authorsBox.innerHTML = (data.top_authors || []).map((a, idx) => `
+          <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+            <div class="flex items-center space-x-2">
+              <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
+              <span class="font-bold text-slate-800">${a.username}</span>
+            </div>
+            <div class="flex items-center space-x-3 text-slate-500">
+              <span><strong>${a.posts_count}</strong> ст.</span>
+              <span><strong>${a.total_views}</strong> переглядів</span>
+            </div>
+          </div>
+        `).join('');
+
+        // Top categories
+        const catBox = document.getElementById('stat-top-categories');
+        catBox.innerHTML = (data.top_categories || []).map(c => `
+          <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+            <span class="font-semibold text-slate-700">${c._id}</span>
+            <div class="flex items-center space-x-2 text-slate-500">
+              <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[11px]">${c.posts_count} статей</span>
+              <span>${c.total_views} переглядів</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    }
+  </script>
+</body>
+</html>
