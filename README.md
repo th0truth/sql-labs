@@ -12,6 +12,7 @@
 | **Lab 02** | Складні SQL запити (JOIN, агрегатні функції, підзапити, віконні функції, CTE, матеріалізовані представлення) | 1–3 (Високий) | Завершено | [SQL](lab02/sql/) | [Звіт](lab02/report.md) |
 | **Lab 03** | Модифікація даних та транзакції (INSERT, UPDATE, DELETE, цілісність даних, транзакції, COMMIT, ROLLBACK) | 1–3 (Високий) | Завершено | [SQL](lab03/sql/) | [Звіт](lab03/report.md) |
 | **Lab 04** | Розробка реляційної БД з веб-інтеграцією (Bookstore DB, Flask, Docker, REST API, RBAC, Reports) | 1–3 (Високий) | Завершено | [SQL](lab04/database/) | [Звіт](lab04/report.md) |
+| **Lab 05** | Керування БД, оптимізація продуктивності та автоматизація (EXPLAIN ANALYZE, Indexes, Triggers, Views, Roles, Backup) | 1–3 (Високий) | Завершено | [SQL](lab05/sql/) | [Звіт](lab05/report.md) |
 
 ---
 
@@ -111,4 +112,19 @@ sql-labs/
     ├── docs/               # Концептуальна ERD та опис 3НФ
     └── task/               # Методичні матеріали
         └── lab-04.md       # Завдання та вимоги
+└── lab05/                  # Лабораторна робота №5 (Оптимізація продуктивності та DBA)
+    ├── report.md           # Підсумковий звіт (порівняння EXPLAIN, запитання)
+    ├── sql/                # SQL-скрипти оптимізації (01–10)
+    │   ├── 01_create_schema.sql             # DDL схеми lab05
+    │   ├── 02_seed_large_dataset.sql        # Навантажувальний датасет (205k+ записів)
+    │   ├── 03_explain_before.sql            # EXPLAIN ANALYZE до оптимізації
+    │   ├── 04_create_indexes.sql            # B-Tree та часткові індекси
+    │   ├── 05_explain_after.sql             # EXPLAIN ANALYZE після оптимізації
+    │   ├── 06_views_and_rules.sql           # VIEW, RULES, MATERIALIZED VIEW
+    │   ├── 07_triggers_and_automation.sql   # Валідація, аудит, каскадні тригери
+    │   ├── 08_roles_and_permissions.sql     # Ієрархія ролей (RBAC)
+    │   ├── 09_maintenance_and_monitoring.sql# Обслуговування СУБД та моніторинг
+    │   └── 10_backup_restore.sh             # Резервне копіювання та відновлення
+    └── task/               # Методичні матеріали
+        └── lab-05.md       # Завдання та вимоги
 ```

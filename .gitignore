@@ -22,6 +22,14 @@ venv/
 env/
 .ruff_cache/
 
+# Backups & dumps
+*.dump
+backups/*.dump
+backups/*.sql
+lab04/backups/*.sql
+lab05/backups/*
+!lab05/backups/.gitkeep
+
 # Logs & temp files
 *.log
 .DS_Store

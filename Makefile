@@ -4,7 +4,8 @@ export
 .PHONY: help psql seed-lab01 run-lab01 run-lab01-level2 run-lab01-level3 run-lab01-all \
         run-lab02 run-lab02-level2 run-lab02-level3 run-lab02-all \
         run-lab03 run-lab03-level2 run-lab03-level3 run-lab03-all \
-        seed-lab04 run-lab04-console run-lab04-web docker-lab04-up docker-lab04-down run-all
+        seed-lab04 run-lab04-console run-lab04-web docker-lab04-up docker-lab04-down \
+        seed-lab05 benchmark-lab05 maintain-lab05 backup-lab05 run-lab05-all run-all
 
 help:
 	@echo "Available commands:"
@@ -27,6 +28,11 @@ help:
 	@echo "  make run-lab04-web     - Run Lab 04 Flask Web application"
 	@echo "  make docker-lab04-up   - Start Lab 04 Docker Compose stack (PostgreSQL + pgAdmin + Web)"
 	@echo "  make docker-lab04-down - Stop Lab 04 Docker Compose stack"
+	@echo "  make seed-lab05        - Seed and optimize Lab 05 database (Schema, 205k+ rows, Indexes, Triggers, Views, Roles)"
+	@echo "  make benchmark-lab05   - Run EXPLAIN ANALYZE benchmarks Before and After optimization"
+	@echo "  make maintain-lab05    - Run automated maintenance procedure and performance monitoring"
+	@echo "  make backup-lab05      - Test logical backup (pg_dump) and restoration"
+	@echo "  make run-lab05-all     - Execute full Lab 05 workflow sequentially"
 	@echo "  make run-all           - Execute all labs sequentially"
 
 psql:
@@ -87,4 +93,24 @@ docker-lab04-up:
 docker-lab04-down:
 	@docker compose -f lab04/docker-compose.yaml down -v
 
-run-all: run-lab01-all run-lab02-all run-lab03-all seed-lab04
+seed-lab05:
+	@psql "$$DATABASE_URL" -f lab05/sql/01_create_schema.sql
+	@psql "$$DATABASE_URL" -f lab05/sql/02_seed_large_dataset.sql
+	@psql "$$DATABASE_URL" -f lab05/sql/04_create_indexes.sql
+	@psql "$$DATABASE_URL" -f lab05/sql/06_views_and_rules.sql
+	@psql "$$DATABASE_URL" -f lab05/sql/07_triggers_and_automation.sql
+	@psql "$$DATABASE_URL" -f lab05/sql/08_roles_and_permissions.sql
+
+benchmark-lab05:
+	@psql "$$DATABASE_URL" -f lab05/sql/03_explain_before.sql
+	@psql "$$DATABASE_URL" -f lab05/sql/05_explain_after.sql
+
+maintain-lab05:
+	@psql "$$DATABASE_URL" -f lab05/sql/09_maintenance_and_monitoring.sql
+
+backup-lab05:
+	@chmod +x lab05/sql/10_backup_restore.sh && ./lab05/sql/10_backup_restore.sh
+
+run-lab05-all: seed-lab05 benchmark-lab05 maintain-lab05 backup-lab05
+
+run-all: run-lab01-all run-lab02-all run-lab03-all seed-lab04 seed-lab05
