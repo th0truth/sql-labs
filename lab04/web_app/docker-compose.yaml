@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NAME=flask-sql-starter
+      - SECRET_KEY=52ZmS7PQ30+1dcXh2X4fhLfytsY=
+      - PYTHONPATH=src
+    volumes:
+      - sqlite_data:/app/instance
+
+volumes:
+  sqlite_data:
