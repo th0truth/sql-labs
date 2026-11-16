@@ -11,6 +11,16 @@ node_modules/
 .neon
 .neon/
 
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+.ruff_cache/
+
 # Logs & temp files
 *.log
 .DS_Store
