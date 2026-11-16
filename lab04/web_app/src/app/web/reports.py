@@ -1,11 +1,16 @@
 import io
+import os
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated, Any, List
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.pdfmetrics import registerFontFamily
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     Paragraph,
     SimpleDocTemplate,
@@ -15,10 +20,66 @@ from reportlab.platypus import (
 )
 
 
+def _init_report_font() -> str:
+    """Реєстрація TrueType шрифту з підтримкою кирилиці для ReportLab."""
+    font_name: str = "LiberationSans"
+
+    if font_name in pdfmetrics.getRegisteredFontNames():
+        return font_name
+
+    static_dir: Path = (
+        Path(__file__).resolve().parent.parent / "static" / "fonts"
+    )
+    regular_font: Path = static_dir / "LiberationSans-Regular.ttf"
+    bold_font: Path = static_dir / "LiberationSans-Bold.ttf"
+
+    if not regular_font.exists():
+        system_candidates: List[tuple[str, str]] = [
+            (
+                "/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+                "/usr/share/fonts/liberation/LiberationSans-Bold.ttf",
+            ),
+            (
+                "/usr/share/fonts/noto/NotoSans-Regular.ttf",
+                "/usr/share/fonts/noto/NotoSans-Bold.ttf",
+            ),
+        ]
+
+        for reg, bld in system_candidates:
+            if os.path.exists(reg) and os.path.exists(bld):
+                regular_font = Path(reg)
+                bold_font = Path(bld)
+                break
+
+    if regular_font.exists():
+        pdfmetrics.registerFont(TTFont(font_name, str(regular_font)))
+
+        if bold_font.exists():
+            pdfmetrics.registerFont(
+                TTFont(f"{font_name}-Bold", str(bold_font))
+            )
+            registerFontFamily(
+                font_name,
+                normal=font_name,
+                bold=f"{font_name}-Bold",
+            )
+
+        return font_name
+
+    return "Helvetica"
+
+
 def generate_books_pdf_report(
     books: Annotated[List[Any], "List of BookBase models"],
 ) -> io.BytesIO:
     """Генерація офіційного PDF-звіту каталогу книгарні (Рівень 3)."""
+    font_name: str = _init_report_font()
+    bold_font_name: str = (
+        f"{font_name}-Bold"
+        if f"{font_name}-Bold" in pdfmetrics.getRegisteredFontNames()
+        else font_name
+    )
+
     buffer: io.BytesIO = io.BytesIO()
     doc: SimpleDocTemplate = SimpleDocTemplate(
         buffer,
@@ -34,6 +95,7 @@ def generate_books_pdf_report(
     title_style: ParagraphStyle = ParagraphStyle(
         "DocTitle",
         parent=styles["Heading1"],
+        fontName=bold_font_name,
         fontSize=18,
         leading=22,
         textColor=colors.HexColor("#1e293b"),
@@ -44,6 +106,7 @@ def generate_books_pdf_report(
     meta_style: ParagraphStyle = ParagraphStyle(
         "DocMeta",
         parent=styles["Normal"],
+        fontName=font_name,
         fontSize=9,
         leading=12,
         textColor=colors.HexColor("#64748b"),
@@ -54,6 +117,7 @@ def generate_books_pdf_report(
     cell_style: ParagraphStyle = ParagraphStyle(
         "CellText",
         parent=styles["Normal"],
+        fontName=font_name,
         fontSize=8,
         leading=10,
     )
@@ -61,6 +125,7 @@ def generate_books_pdf_report(
     header_cell_style: ParagraphStyle = ParagraphStyle(
         "HeaderCellText",
         parent=styles["Normal"],
+        fontName=bold_font_name,
         fontSize=8,
         leading=10,
         textColor=colors.white,
@@ -165,6 +230,7 @@ def generate_books_pdf_report(
     summary_style: ParagraphStyle = ParagraphStyle(
         "SummaryStyle",
         parent=styles["Normal"],
+        fontName=font_name,
         fontSize=9,
         leading=14,
         textColor=colors.HexColor("#334155"),

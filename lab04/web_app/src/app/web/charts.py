@@ -8,6 +8,15 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
+plt.rcParams["font.sans-serif"] = [
+    "Liberation Sans",
+    "DejaVu Sans",
+    "Noto Sans",
+    "Arial",
+    "sans-serif",
+]
+plt.rcParams["axes.unicode_minus"] = False
+
 
 def generate_genre_chart(
     books: Annotated[List[Any], "List of BookBase models"],
