@@ -29,6 +29,8 @@ backups/*.sql
 lab04/backups/*.sql
 lab05/backups/*
 !lab05/backups/.gitkeep
+lab06/backups/*
+!lab06/backups/.gitkeep
 
 # Logs & temp files
 *.log

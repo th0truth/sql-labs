@@ -5,7 +5,8 @@ export
         run-lab02 run-lab02-level2 run-lab02-level3 run-lab02-all \
         run-lab03 run-lab03-level2 run-lab03-level3 run-lab03-all \
         seed-lab04 run-lab04-console run-lab04-web docker-lab04-up docker-lab04-down \
-        seed-lab05 benchmark-lab05 maintain-lab05 backup-lab05 run-lab05-all run-all
+        seed-lab05 benchmark-lab05 maintain-lab05 backup-lab05 run-lab05-all \
+        mongo-up mongo-down run-lab06-all run-all
 
 help:
 	@echo "Available commands:"
@@ -33,6 +34,9 @@ help:
 	@echo "  make maintain-lab05    - Run automated maintenance procedure and performance monitoring"
 	@echo "  make backup-lab05      - Test logical backup (pg_dump) and restoration"
 	@echo "  make run-lab05-all     - Execute full Lab 05 workflow sequentially"
+	@echo "  make mongo-up          - Start MongoDB 8.0 Docker container"
+	@echo "  make mongo-down        - Stop MongoDB Docker container"
+	@echo "  make run-lab06-all     - Execute full Lab 06 MongoDB workflow (CRUD, Indexes, Aggregation, Level 3)"
 	@echo "  make run-all           - Execute all labs sequentially"
 
 psql:
@@ -113,4 +117,20 @@ backup-lab05:
 
 run-lab05-all: seed-lab05 benchmark-lab05 maintain-lab05 backup-lab05
 
-run-all: run-lab01-all run-lab02-all run-lab03-all seed-lab04 seed-lab05
+mongo-up:
+	@if ! docker ps --format '{{.Names}}' | grep -q "^mongodb$$"; then \
+		docker rm -f mongodb 2>/dev/null || true; \
+		docker run -d --name mongodb --net=host mongo:8.0; \
+		echo "MongoDB 8.0 container started."; \
+	else \
+		echo "MongoDB container is already running."; \
+	fi
+
+mongo-down:
+	@docker rm -f mongodb 2>/dev/null || true
+	@echo "MongoDB container stopped."
+
+run-lab06-all:
+	@chmod +x lab06/scripts/run_all.sh && ./lab06/scripts/run_all.sh
+
+run-all: run-lab01-all run-lab02-all run-lab03-all seed-lab04 seed-lab05 run-lab06-all

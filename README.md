@@ -13,6 +13,7 @@
 | **Lab 03** | Модифікація даних та транзакції (INSERT, UPDATE, DELETE, цілісність даних, транзакції, COMMIT, ROLLBACK) | 1–3 (Високий) | Завершено | [SQL](lab03/sql/) | [Звіт](lab03/report.md) |
 | **Lab 04** | Розробка реляційної БД з веб-інтеграцією (Bookstore DB, Flask, Docker, REST API, RBAC, Reports) | 1–3 (Високий) | Завершено | [SQL](lab04/database/) | [Звіт](lab04/report.md) |
 | **Lab 05** | Керування БД, оптимізація продуктивності та автоматизація (EXPLAIN ANALYZE, Indexes, Triggers, Views, Roles, Backup) | 1–3 (Високий) | Завершено | [SQL](lab05/sql/) | [Звіт](lab05/report.md) |
+| **Lab 06** | Робота з СУБД MongoDB та реалізація операцій (NoSQL CRUD, Aggregations, $lookup, 2dsphere, Versioning, Backup) | 1–3 (Високий) | Завершено | [Scripts](lab06/scripts/) | [Звіт](lab06/report.md) |
 
 ---
 
@@ -127,4 +128,19 @@ sql-labs/
     │   └── 10_backup_restore.sh             # Резервне копіювання та відновлення
     └── task/               # Методичні матеріали
         └── lab-05.md       # Завдання та вимоги
+└── lab06/                  # Лабораторна робота №6 (NoSQL СУБД MongoDB)
+    ├── report.md           # Підсумковий звіт (порівняння NoSQL vs SQL, запитання)
+    ├── report.pdf          # Експортований друкований PDF-звіт
+    ├── scripts/            # Скрипти MongoDB (01–07, run_all.sh)
+    │   ├── 01_seed_database.js              # Ініціалізація та наповнення (books, authors, users, locations)
+    │   ├── 02_basic_crud.js                 # CRUD операції (insertOne/Many, find, update, replace, delete)
+    │   ├── 03_indexes_and_performance.js    # B-Tree, складені та унікальні індекси, explain executionStats
+    │   ├── 04_aggregation_pipelines.js      # Конвеєри ($unwind, $group, $project, $avg, $sum)
+    │   ├── 05_lookup_and_views.js           # З'єднання $lookup, представлення (view), текстовий пошук $text
+    │   ├── 06_advanced_level3.js            # JSON Schema, 2dsphere геопошук, версіонування документів
+    │   ├── 07_backup_and_restore.sh         # mongodump, mongoexport, тестове відновлення mongorestore
+    │   └── run_all.sh                       # Автоматизований наскрізний запуск усього конвеєра
+    ├── backups/            # Логічні дампи BSON та JSON
+    └── task/               # Методичні матеріали
+        └── lab-06.md       # Завдання та вимоги
 ```
